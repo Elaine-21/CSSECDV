@@ -1,52 +1,71 @@
+const logger = require('../middleware/logger');
 const express = require('express');
 const router = express.Router();
-const passport = require('passport')
-const auth = require('../../controller/authenticator.js')
-
-const api = require('../../controller/profiles_controller.js')
+const passport = require('passport');
+const auth = require('../../controller/authenticator.js');
+const api = require('../../controller/profiles_controller.js');
 
 router.get('/register', auth.checkAlreadyAuthenticated, async (req, res) =>{
-    console.log("user is registering");
+    logger.info({ event: 'auth_attempt', status: 'register_page', ip: req.ip, userAgent: req.headers['user-agent'] });
     try {
         res.render('register');
     } catch (error) {
-        console.log(error);
+        logger.error({ event: 'error', msg: error.message });
     }
 });
 
 router.post('/register', async (req, res) => {
+    logger.info({ event: 'auth_attempt', status: 'register_submit', username: req.body.username, ip: req.ip, userAgent: req.headers['user-agent'] });
     const result = await api.registerUser(req.body);
-
-    res.redirect('/')
+    res.redirect('/');
 });
 
 router.get('/login', auth.checkAlreadyAuthenticated, async (req, res) =>{
-    console.log("user is try to log in");
+    logger.info({ event: 'auth_attempt', status: 'login_page', ip: req.ip, userAgent: req.headers['user-agent'] });
     try {
         res.render('login');
     } catch (error) {
-        console.log(error);
+        logger.error({ event: 'error', msg: error.message });
     }
 });
 
-router.post('/login', auth.checkAlreadyAuthenticated, passport.authenticate('local', {
-    failureRedirect: '/login',
-    failureFlash: true,
-}),
-    (req, res) => {
-        if (req.body.remember) {
-            const days = 21
-            req.session.cookie.maxAge = 1000 * 60 * 60 * 24 * days
-        }
+router.post('/login', auth.checkAlreadyAuthenticated, (req, res, next) => {
+    // Log every login attempt
+    logger.info({ event: 'auth_attempt', status: 'login_attempt', username: req.body.username, ip: req.ip, userAgent: req.headers['user-agent'] });
 
-        res.redirect('/');
-    }
-);
+    passport.authenticate('local', (err, user, info) => {
+        if (err) {
+            logger.error({ event: 'auth_attempt', status: 'error', username: req.body.username, msg: err.message });
+            return next(err);
+        }
+        if (!user) {
+            logger.warn({ event: 'auth_attempt', status: 'failure', username: req.body.username, reason: info?.message || 'Invalid credentials' });
+            return res.redirect('/login');
+        }
+        req.logIn(user, (err) => {
+            if (err) {
+                logger.error({ event: 'auth_attempt', status: 'error', username: req.body.username, msg: err.message });
+                return next(err);
+            }
+
+            logger.info({ event: 'auth_attempt', status: 'success', username: req.body.username });
+            if (req.body.remember) {
+                const days = 21;
+                req.session.cookie.maxAge = 1000 * 60 * 60 * 24 * days;
+            }
+            res.redirect('/');
+        });
+    })(req, res, next);
+});
 
 router.delete('/logout', function(req, res, next) {
+    logger.info({ event: 'auth_attempt', status: 'logout', username: req.user?.username, ip: req.ip, userAgent: req.headers['user-agent'] });
     req.logout(function(err) {
-      if (err) { return next(err); }
-      res.redirect('/');
+        if (err) {
+            logger.error({ event: 'auth_attempt', status: 'logout_error', msg: err.message });
+            return next(err);
+        }
+        res.redirect('/');
     });
 });
 
