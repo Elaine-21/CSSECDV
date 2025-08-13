@@ -14,6 +14,7 @@ router.get('/:postId', async (req, res, next) => {
             data,
             currentRoute: `/post/${slug}`,
             user: req.user.username,
+            status:req.user.status,
             userID: req.user._id,
             cmt
         });

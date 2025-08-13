@@ -19,6 +19,7 @@ router.get('', auth.checkAuthenticated, async (req, res, next) => {
     res.render('index', {
       data,
       user: req.user.username,
+      status:req.user.status,
       userID: req.user._id,
       topPosts,
     });
@@ -31,7 +32,7 @@ router.get('', auth.checkAuthenticated, async (req, res, next) => {
 // GET /newPost
 router.get('/newPost', auth.checkAuthenticated, async (req, res, next) => {
   try {
-    res.render('new_post', { user: req.user.username });
+    res.render('new_post', { user: req.user.username, status:req.user.status });
   } catch (error) {
     logger.error({ event: 'server_error', path: req.originalUrl, message: error.message, stack: error.stack });
     next(error);
@@ -83,7 +84,7 @@ GET
 router.get('/editPost/:id', auth.checkAuthenticated, async (req, res, next) => {
   try {
     const data = await Post.findOne({ _id: req.params.id });
-    res.render('edit_post', { data, user: req.user.username });
+    res.render('edit_post', { data, user: req.user.username, status:req.user.status });
   } catch (error) {
     logger.error({ event: 'server_error', path: req.originalUrl, message: error.message, stack: error.stack });
     next(error);
@@ -147,6 +148,7 @@ router.post('', async (req, res, next) => {
       data,
       currentRoute: '/',
       user: req.user.username,
+      status:req.user.status,
       userID: req.user._id,
       topPosts,
     });

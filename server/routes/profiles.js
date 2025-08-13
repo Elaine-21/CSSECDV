@@ -11,7 +11,7 @@ router.get('/:username', async (req, res) => {
 });
 
 router.get('/:username/edit', (req, res) => {
-    res.render("edit_profile", { user: req.user })
+    res.render("edit_profile", { user: req.user, status:req.user.status })
 });
 
 router.post('/edit-profile', api.upload.fields([{name: 'profile', maxCount: 1}, {name: 'background', maxCount: 1}]), 

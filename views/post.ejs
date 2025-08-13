@@ -56,10 +56,13 @@
                     </div>
                     <div class="action-container">
                         <a href="/posts/<%=data._id%>">
+                            <% if(status === "active") { %>
                             <div class="flex-action-container">
                                 <img src="/images/post_elements/comment.png" class="action-icon">
                                 &nbsp;Comment
                             </div>
+                                <%}
+                            %>
                         </a>
                         &nbsp;&nbsp;
                         <div id="copyLink:<%=data._id%>" class="copyLink">
@@ -67,7 +70,7 @@
                             &nbsp;Share
                         </div>
                         &nbsp;&nbsp;
-                        <% if(data.author == user){ %>
+                        <% if(data.author == user && status == "active"){ %>
                             <a href="/editPost/<%=data._id%>">
                                 <div class="flex-action-container">
                                     <img src="/images/post_elements/output-onlinepngtools.png" class="action-icon">
@@ -83,9 +86,11 @@
                         </div>
                         <form action="/posts/<%=data._id%>" class="com__form" method="POST">
                             <textarea placeholder="Bark!" class="textarea" id="inputComment" name="comTerm"></textarea>
+                            <% if(status === "active") { %>
                             <div class="userCommentCommands">
                                 <button type="submit" class="commentButton" id="postComment">Comment</button>
                             </div>
+                            <%}%>
                         </form>
                     </div>
                 </div>
@@ -126,9 +131,11 @@
                             <div id="replyForm-<%= comments._id %>">
                                 <form action="/posts/<%= data._id %>/Comments/<%= comments._id %>/reply" class="com__form" method="POST">
                                     <textarea placeholder="Bark!" class="textarea" id="replyInputComment" name="replyTerm">@u/<%= comments.commentAuthor%> </textarea>
+                                    <% if(status === "active") { %>
                                     <div class="userCommentCommands">
                                         <button type="submit" class="commentButton" id="replyPostComment">Comment</button>
                                     </div>
+                                    <%}%>
                                 </form>
                             </div>
 
@@ -136,9 +143,11 @@
                             <div id="visibility-<%= comments._id %>">
                                 <form action="/posts/<%= data._id %>/Comments/<%= comments._id %>/edit" class="com__form" method="POST">
                                     <textarea placeholder="Bark!" class="textarea" id="editInputComment" name="editTerm"><%= comments.comment %></textarea>
+                                    <% if(status === "active") { %>
                                     <div class="userCommentCommands">
                                         <button type="submit" class="commentButton" id="editPostComment">Comment</button>
                                     </div>
+                                    <%} %>
                                 </form>
                                 <form action="/posts/<%= data._id %>/comments/<%= comments._id %>/delete" method="POST">
                                     <div class="userCommentCommands">

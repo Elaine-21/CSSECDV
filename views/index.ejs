@@ -76,10 +76,13 @@
                         </div>
                         <div class="action-container">
                             <a href="/posts/<%=post._id%>">
+                                <% if(status === "active") { %>
                                 <div class="flex-action-container">
                                     <img src="images/post_elements/comment.png" class="action-icon">
                                     &nbsp;Comment
                                 </div>
+                                <%}%>
+                                
                             </a>
                             &nbsp;&nbsp;
                             <div id="copyLink:<%=post._id%>" class="copyLink">
@@ -87,7 +90,7 @@
                                 &nbsp;Share
                             </div>
                             &nbsp;&nbsp;
-                            <% if(post.author == user){ %>
+                            <% if(post.author == user && status === "active"){ %>
                                 <a href="/editPost/<%=post._id%>">
                                     <div class="flex-action-container">
                                         <img src="images/post_elements/output-onlinepngtools.png" class="action-icon">

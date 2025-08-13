@@ -94,15 +94,17 @@
                                 </a>
                             </div>
                             <div class="action-container">
+                              <% if(status === "active") { %>
                                 <img src="/images/post_elements/comment.png" class="action-icon">
                                 <a href="/posts/<%=post._id%>">&nbsp;Comment</a>
+                              <% } %>
                                 &nbsp;&nbsp;
                                 <div id="copyLink:<%=post._id%>" class="copyLink">
                                     <img src="/images/post_elements/share.png" class="action-icon">
                                     Share
                                 </div>
                                 &nbsp;&nbsp;
-                                <% if(post.author == user){ %>
+                                <% if(post.author == user && status === "active"){ %>
                                     <img src="/images/post_elements/output-onlinepngtools.png" class="action-icon">
                                     &nbsp;
                                     <a href="/editPost/<%=post._id%>">Edit</a>
@@ -200,8 +202,7 @@ $(function () {
       data: JSON.stringify({ status: 'muted' }),
       success: function (resp) {
         if (resp.ok) {
-          // show your modal (from earlier)
-          openModal('User has been Muted', 'User is now unable to post and comment.');
+          openModal('User has been Muted', '<%=username%> is now unable to post and comment.');
         } else {
           alert(resp.error || 'Failed to mute user');
         }
@@ -213,13 +214,26 @@ $(function () {
     });
   });
 
-  // Open: Ban (optional)
+  // Open: Ban
   $('#ban-user').on('click', function (e) {
     e.preventDefault();
-    openModal(
-      'User has been Banned',
-      'This user can no longer access the site.'
-    );
+     $.ajax({
+      url: '/profiles/<%= encodeURIComponent(username) %>/status',
+      method: 'PUT',
+      contentType: 'application/json',
+      data: JSON.stringify({ status: 'banned' }),
+      success: function (resp) {
+        if (resp.ok) {
+          openModal('User has been Banned', '<%=username%> can no longer access the site.');
+        } else {
+          alert(resp.error || 'Failed to mute user');
+        }
+      },
+      error: function (xhr) {
+        const msg = (xhr.responseJSON && xhr.responseJSON.error) || 'Request failed';
+        alert(msg);
+      }
+    });
   });
 
   // Close handlers

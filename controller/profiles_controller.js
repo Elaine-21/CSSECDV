@@ -118,6 +118,7 @@ async function renderProfile(req, res) {
             userID: req.user._id,
             commentD: commentData,
             userType: req.user.userType,
+            status:req.user.status,
         });
     } catch (err) {
         console.log(err);

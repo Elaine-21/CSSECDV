@@ -48,6 +48,14 @@ router.post('/login', auth.checkAlreadyAuthenticated, (req, res, next) => {
                 return next(err);
             }
 
+            if (user.status === 'banned') {
+                logger.warn({ event: 'auth_attempt', status: 'denied_banned', username: req.body.username });
+                req.logout(() => {
+                return res.render('errors/banned');
+                });
+                return;
+            }
+
             logger.info({ event: 'auth_attempt', status: 'success', username: req.body.username });
             if (req.body.remember) {
                 const days = 21;
