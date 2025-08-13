@@ -4,15 +4,38 @@ const bcrypt = require('bcrypt')
 function initialize(passport, getUserByEmail, getUserById) {
     const authenticateUser = async (email, password, done) => {
         const user = await getUserByEmail(email);
+        const now = new Date();
         if (user == null) {
             return done(null, false, {message: 'Invalid email or password'});
         }
 
         try {
             if (await bcrypt.compare(password, user.password)) {
+                if (user.lockUntil && user.lockUntil > now) {
+                    return done(null, false, { message: 'Account Locked' }); //assume wrong for security only say lockout if valid
+                }
+                user.failedLoginAttempts = 0; // reset
+                user.lockUntil = null; //reset
+
+                user.last_successful_login = now; //report last succesful login
+
+                await user.save();
                 return done(null, user);
             } else {
-            return done(null, false, {message: 'Invalid email or password'});
+                if (user.lockUntil && user.lockUntil > now) {
+                    return done(null, false, { message: 'Account Locked. Try again later.' }); //assume wrong for security only say lockout if valid
+                }
+
+                user.failedLoginAttempts = (user.failedLoginAttempts || 0) + 1;
+                user.last_unsuccessful_login = now; //report last UNsuccessful login
+
+                if (user.failedLoginAttempts >= 5) {
+                    user.lockUntil = new Date(now.getTime() + 10 * 60 * 1000); // 10 min
+                    user.failedLoginAttempts = 0; // reset counter after lock
+                }
+                
+                await user.save();
+                return done(null, false, {message: 'Invalid email or password'});
             }
         } catch (e) {
             return done(e);
