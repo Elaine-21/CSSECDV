@@ -1,6 +1,18 @@
 const mongoose = require('mongoose');
 
 const Schema = mongoose.Schema;
+
+const SecurityQuestionSchema = new Schema({
+    question: { 
+        type: String, 
+        required: true 
+    },
+    answer: { 
+        type: String, 
+        required: true 
+    }
+});
+
 const ProfileSchema = new Schema({
     username: {
         type: String,
@@ -26,6 +38,33 @@ const ProfileSchema = new Schema({
     },
     profileDescription: {
         type: String
+    },
+    failedLoginAttempts: {
+        type: Number
+    },
+    lockUntil: {
+        type: Date, 
+        default: null
+    },
+    securityQuestions: { 
+        type: [SecurityQuestionSchema], 
+        default: [] 
+    },
+    passwordHistory: { 
+        type: [String], 
+        default: []
+    },
+    passwordAge: {
+        type: Date, 
+        default: Date.now
+    },
+    last_successful_login: { 
+        type: Date, 
+        default: null 
+    },
+    last_unsuccessful_login: { 
+        type: Date, 
+        default: null 
     }
 });
 
