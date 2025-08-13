@@ -19,19 +19,19 @@ router.get('/:username/edit', (req, res) => {
 
 router.post('/edit-profile', api.upload.fields([{name: 'profile', maxCount: 1}, {name: 'background', maxCount: 1}]), 
     async (req, res) => {
-        console.log("current user" + req.body.currentUser);
-        console.log("new user" + req.body.username_change);
-        
-        await api.updateUser(req.body, req.files);
-
         try {
-            const newUserDoc = await Profile.findOne({"username": req.body.username_change});
-            const newUser = newUserDoc.username;
-            res.redirect("/profiles/" + newUser);
+            console.log("current user" + req.body.currentUser);
+            console.log("new user" + req.body.username_change);
+            
+            await api.updateUser(req.body, req.files);
+    
+            const newUsername = req.body.username_change || req.body.currentUser;
+            res.redirect("/profiles/" + newUsername);
         } catch (err) {
-            res.redirect("/profiles/" + req.body.currentUser);
+            console.error(err);
+            // For a better user experience, use connect-flash to show the error message on the edit page.
+            res.redirect(`/profiles/${req.body.currentUser}/edit`);
         }
-
 });
 
 router.get('/checkUsernameExist/:username', async (req, res) => {

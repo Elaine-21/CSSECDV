@@ -8,6 +8,24 @@ const path = require('path');
 const bcrypt = require('bcrypt');
 const comment = require('../db/schema/comment');
 
+/**
+ * Validates a password based on complexity requirements.
+ * @param {string} password The password to validate.
+ * @throws {Error} If the password does not meet the requirements.
+ */
+function validatePassword(password) {
+    if (!password || password.length < 8) {
+        throw new Error("Password must be at least 8 characters long.");
+    }
+    if (/\s/.test(password)) {
+        throw new Error("Password must not contain spaces.");
+    }
+    const specialCharRegex = /[!@#$%^&*(),.?":{}|<>]/;
+    if (!specialCharRegex.test(password)) {
+        throw new Error("Password must contain at least one special character.");
+    }
+}
+
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         if (file.fieldname === 'profile') {
@@ -44,6 +62,7 @@ const upload = multer({ storage: storage , fileFilter: fileFilter})
 
 async function updateUser(req_body, req_files) {
     if (req_body.password_change.length !== 0) {
+        validatePassword(req_body.password_change);
         const hashedPW = await bcrypt.hash(req_body.password_change, 10)
         await Profile.updateOne({"username": req_body.currentUser}, {$set:{"password": hashedPW}});
     }
@@ -71,6 +90,7 @@ async function updateUser(req_body, req_files) {
 }
 
 async function registerUser(req_body) {
+    validatePassword(req_body.password);
     const hashedPW = await bcrypt.hash(req_body.password, 10)
     // Let this throw an error on failure (e.g. duplicate key)
     // The route handler will catch it.
