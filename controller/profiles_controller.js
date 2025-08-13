@@ -71,19 +71,14 @@ async function updateUser(req_body, req_files) {
 }
 
 async function registerUser(req_body) {
-    let result = true
     const hashedPW = await bcrypt.hash(req_body.password, 10)
-    try {
-        await Profile.create({
-            username: req_body.username,
-            password: hashedPW,
-            email: req_body.email,
-        });
-    } catch (error) {
-        result = false;
-    }
-    
-    return result;
+    // Let this throw an error on failure (e.g. duplicate key)
+    // The route handler will catch it.
+    await Profile.create({
+        username: req_body.username,
+        password: hashedPW,
+        email: req_body.email,
+    });
 }
 
 async function getProfile_username(username) {

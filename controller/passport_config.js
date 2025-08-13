@@ -9,11 +9,11 @@ function initialize(passport, getUserByEmail, getUserById) {
         }
 
         try {
-        if (await bcrypt.compare(password, user.password)) {
-            return done(null, user);
-        } else {
+            if (await bcrypt.compare(password, user.password)) {
+                return done(null, user);
+            } else {
             return done(null, false, {message: 'Incorrect password'});
-        }
+            }
         } catch (e) {
             return done(e);
         }
@@ -21,9 +21,14 @@ function initialize(passport, getUserByEmail, getUserById) {
 
     passport.use(new LocalStrategy({ usernameField: 'email' }, authenticateUser));
     passport.serializeUser((user, done) => done(null, user._id));
-    passport.deserializeUser( async (id, done) => {;
-        return done(null, await getUserById(id))
-    })
+    passport.deserializeUser(async (id, done) => {
+        try {
+            const user = await getUserById(id);
+            done(null, user);
+        } catch (e) {
+            done(e);
+        }
+    });
 }
 
 module.exports = initialize
