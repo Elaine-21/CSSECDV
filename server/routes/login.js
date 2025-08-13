@@ -8,7 +8,7 @@ const api = require('../../controller/profiles_controller.js')
 router.get('/register', auth.checkAlreadyAuthenticated, async (req, res) =>{
     console.log("user is registering");
     try {
-        res.render('register');
+        res.render('register', { error: req.flash('error') });
     } catch (error) {
         console.log(error);
     }
@@ -18,11 +18,11 @@ router.post('/register', auth.checkAlreadyAuthenticated,async (req, res) => {
     try {
         await api.registerUser(req.body);
         // On successful registration, redirect to the login page.
-        // You might want to add a flash message here saying "Registration successful. Please log in."
+        req.flash('success_msg', 'Registration successful. Please log in.');
         res.redirect('/login');
     } catch (e) {
         // If registration fails (e.g., duplicate username/email), redirect back to the registration page.
-        // It's a good practice to use connect-flash to show an error message.
+        req.flash('error', e.message);
         res.redirect('/register');
     }
 });
