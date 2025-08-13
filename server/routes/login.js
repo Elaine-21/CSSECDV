@@ -5,7 +5,7 @@ const auth = require('../../controller/authenticator.js')
 
 const api = require('../../controller/profiles_controller.js')
 
-router.get('/register', auth.checkAlreadyAuthenticated, async (req, res) =>{
+router.get('/register', async (req, res) =>{
     console.log("user is registering");
     try {
         res.render('register');
@@ -20,7 +20,7 @@ router.post('/register', async (req, res) => {
     res.redirect('/')
 });
 
-router.get('/login', auth.checkAlreadyAuthenticated, async (req, res) =>{
+router.get('/login', async (req, res) =>{
     console.log("user is try to log in");
     try {
         res.render('login');
@@ -29,7 +29,7 @@ router.get('/login', auth.checkAlreadyAuthenticated, async (req, res) =>{
     }
 });
 
-router.post('/login', auth.checkAlreadyAuthenticated, passport.authenticate('local', {
+router.post('/login', passport.authenticate('local', {
     failureRedirect: '/login',
     failureFlash: true,
 }),

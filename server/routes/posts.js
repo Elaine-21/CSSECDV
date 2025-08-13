@@ -2,7 +2,10 @@ const express = require('express');
 const router = express.Router();
 const Post = require('../../db/schema/post');
 const Comment = require('../../db/schema/comment');
+const auth = require('../../controller/authenticator.js')
 require('dotenv').config()
+
+router.use(auth.checkAuthenticated);
 
 router.get('/:postId', async (req, res) => {
 

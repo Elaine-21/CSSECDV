@@ -1,10 +1,13 @@
 const express = require('express');
 const router = express.Router();
+const auth = require('../../controller/authenticator.js')
 require('dotenv').config()
 
 const api = require('../../controller/profiles_controller.js')
 
 const Profile = require('../../db/schema/profile');
+
+router.use(auth.checkAuthenticated);
 
 router.get('/:username', async (req, res) => {
     await api.renderProfile(req, res);

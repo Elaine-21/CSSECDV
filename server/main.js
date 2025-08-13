@@ -7,7 +7,9 @@ const auth = require('../controller/authenticator.js');
 const api = require('../controller/profiles_controller.js');
 const { ReadConcern } = require('mongodb');
 
-router.get('', auth.checkAuthenticated, async (req, res) =>{
+router.use(auth.checkAuthenticated);
+
+router.get('', async (req, res) =>{
     console.log("Server is running");
     try {
         const data = await Post.find().sort({"datePosted": -1});
@@ -21,7 +23,7 @@ router.get('', auth.checkAuthenticated, async (req, res) =>{
     }
 });
 
-router.get('/newPost', auth.checkAuthenticated, async (req, res) =>{
+router.get('/newPost', async (req, res) =>{
     console.log("user is making a new post");
     try {
         res.render('new_post', {user: req.user.username});
@@ -63,7 +65,7 @@ router.post('/newPost', api.upload.single('image_url'), async (req, res) => {
 GET
 */
 
-router.get('/editPost/:id', auth.checkAuthenticated, async (req, res) => {
+router.get('/editPost/:id', async (req, res) => {
     try {
 
         const data = await Post.findOne({ _id: req.params.id });
@@ -217,5 +219,6 @@ router.post('/posts/:postId/comments/:commentId/delete', async (req, res) => {
         res.status(500).send('Error adding reply comment.');
     }
 }); 
+
 
 module.exports = router;
