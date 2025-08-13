@@ -78,6 +78,7 @@ async function registerUser(req_body) {
             username: req_body.username,
             password: hashedPW,
             email: req_body.email,
+            userType: "user",
         });
     } catch (error) {
         result = false;
@@ -85,6 +86,8 @@ async function registerUser(req_body) {
     
     return result;
 }
+
+
 
 async function getProfile_username(username) {
     return await Profile.findOne({"username": username});
@@ -113,12 +116,40 @@ async function renderProfile(req, res) {
             pPicPath: profilePic,
             bgPicPath: backgroundPic,
             userID: req.user._id,
-            commentD: commentData});
+            commentD: commentData,
+            userType: req.user.userType,
+        });
     } catch (err) {
         console.log(err);
         res.redirect('/');
     }
 }
 
+async function setStatus(req, res) {
+    try{
+        const { status } = req.body;
+        const allowed = ['active','muted','banned'];
+        if (!allowed.includes(status)) {
+        return res.status(400).json({ ok: false, error: 'Invalid status' });
+        }
+
+        const target = await Profile.findOne({ username: req.params.username });
+        if (!target) return res.status(404).json({ ok: false, error: 'User not found' });
+
+        if (target.userType === 'admin' && req.user.userType !== 'admin') {
+        return res.status(403).json({ ok: false, error: 'Cannot change admin status' });
+        }
+
+        const result = await Profile.updateOne(
+            { "username": req.params.username },
+            { $set: { "status": status } } 
+        );
+        return res.json({ ok: true, matched: result.matchedCount, modified: result.modifiedCount });
+    } catch (err) {
+        return res.status(500).json({ ok: false, error: 'Server error' });
+    }
+
+}
+
 module.exports = { renderProfile, getProfile_username, getProfile_id, getProfile_email, updateUser, registerUser, 
-                    upload }
+                    upload, setStatus }

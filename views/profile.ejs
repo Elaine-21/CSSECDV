@@ -5,6 +5,7 @@
     <link rel="stylesheet" type="text/css" href="/css/profile_format.css"/>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="/js/vote.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <title>u/<%=username%></title>
 </head>
 
@@ -27,7 +28,17 @@
             <div class="edit-profile-btn">
                 <a href="<%=user%>/edit">Edit Profile</a>
             </div>
-            <% } %>
+            <% } else if(userType == "moderator" || userType == "admin") {%>
+            <div class="settings-icon">
+                <i class="bi bi-three-dots"></i>
+                <div class="settings-popup" id="settingsPopup">
+                    <!-- <a href="/ban/<%=username%>">Ban User</a>
+                    <a href="/warn/<%=username%>">Mute User</a> -->
+                    <a id="mute-user">Mute User</a>
+                    <a id="ban-user">Ban User</a>
+                </div>
+            </div>
+            <%} %>
         </div>
 
         <% if (username === user) {%>
@@ -122,4 +133,102 @@
         </div>
     </div>
 
+<!-- Overlay + Modal -->
+<div id="modalOverlay" class="modal-overlay" aria-hidden="true"></div>
+
+<div id="modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-describedby="modalBody">
+  <div class="modal-header">
+    <h3 id="modalTitle">Title</h3>
+    <button type="button" class="modal-close" aria-label="Close">&times;</button>
+  </div>
+  <div class="modal-body" id="modalBody">Body text…</div>
+  <div class="modal-actions">
+    <button type="button" id="modalOk">OK</button>
+  </div>
+</div>
+
+<script>
+$(function () {
+
+  const $settingsIcon  = $(".settings-icon");
+  const $settingsPopup = $("#settingsPopup");
+
+  const $muteUser = $("#mute-user");
+  const $banUser  = $("#ban-user");
+
+  const $overlay = $('#modalOverlay');
+  const $modal   = $('#modal');
+  const $title   = $('#modalTitle');
+  const $body    = $('#modalBody');
+
+  $settingsIcon.on("click", function (e) {
+    e.stopPropagation();
+    $settingsPopup.toggle(); // show/hide
+  });
+
+  // Keep popup open when clicking inside it
+  $settingsPopup.on("click", function (e) {
+    e.stopPropagation();
+  });
+
+    // Close popup when clicking outside
+  $(document).on("click", function () {
+    $settingsPopup.hide();
+  });
+
+  function openModal(title, body) {
+    $title.text(title);
+    $body.html(body);
+    $overlay.addClass('show');
+    $modal.addClass('show');
+    // Basic focus handling
+    $('#modalOk').focus();
+  }
+
+  function closeModal() {
+    $overlay.removeClass('show');
+    $modal.removeClass('show');
+  }
+
+  // Open: Mute
+  $('#mute-user').on('click', function (e) {
+    e.preventDefault();
+    $.ajax({
+      url: '/profiles/<%= encodeURIComponent(username) %>/status',
+      method: 'PUT',
+      contentType: 'application/json',
+      data: JSON.stringify({ status: 'muted' }),
+      success: function (resp) {
+        if (resp.ok) {
+          // show your modal (from earlier)
+          openModal('User has been Muted', 'User is now unable to post and comment.');
+        } else {
+          alert(resp.error || 'Failed to mute user');
+        }
+      },
+      error: function (xhr) {
+        const msg = (xhr.responseJSON && xhr.responseJSON.error) || 'Request failed';
+        alert(msg);
+      }
+    });
+  });
+
+  // Open: Ban (optional)
+  $('#ban-user').on('click', function (e) {
+    e.preventDefault();
+    openModal(
+      'User has been Banned',
+      'This user can no longer access the site.'
+    );
+  });
+
+  // Close handlers
+  $('#modalOk, .modal-close, #modalOverlay').on('click', closeModal);
+  $(document).on('keydown', function (e) {
+    if (e.key === 'Escape') closeModal();
+  });
+
+});
+</script>
+ 
 </body>

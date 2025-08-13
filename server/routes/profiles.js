@@ -60,4 +60,8 @@ router.param("username", (req, res, next, username) => {
     next();
 });
 
+router.put('/:username/status',
+    api.setStatus
+);
+
 module.exports = router;

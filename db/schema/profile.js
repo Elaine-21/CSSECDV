@@ -1,6 +1,13 @@
 const mongoose = require('mongoose');
 
 const Schema = mongoose.Schema;
+
+const USER_TYPES = {
+    ADMIN: 'admin',
+    MODERATOR: 'moderator',
+    USER: 'user'
+};
+
 const ProfileSchema = new Schema({
     username: {
         type: String,
@@ -26,6 +33,16 @@ const ProfileSchema = new Schema({
     },
     profileDescription: {
         type: String
+    },
+    userType:{
+        type: String,
+        enum: Object.values(USER_TYPES),
+        required: true
+    },
+    status: {
+        type: String,
+        enum: ['active','muted','banned'],
+        default: 'active'
     }
 });
 

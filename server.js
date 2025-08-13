@@ -1,4 +1,5 @@
 // server.js
+
 const express = require("express");
 const app = express();
 
@@ -88,6 +89,7 @@ app.use((err, req, res, next) => {
     .status(err.status || 500)
     .render("errors/500", { message: "Something went wrong." });
 });
+
 
 // ------- start -------
 const PORT = process.env.PORT || 3000;
