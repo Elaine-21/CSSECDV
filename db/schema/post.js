@@ -12,12 +12,12 @@ const PostSchema = new Schema({
         default: 0
     },
     upvotes: {
-        type: [Schema.Types.ObjectId],
-        required: false
+        type: [{ type: Schema.Types.ObjectId, ref: 'Profile' }],
+        default: []
     },
     downvotes: {
-        type: [Schema.Types.ObjectId],
-        required: false
+        type: [{ type: Schema.Types.ObjectId, ref: 'Profile' }],
+        default: []
     },
     author: {
         type: String,
