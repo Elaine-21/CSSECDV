@@ -3,6 +3,7 @@
 <head>
     <link rel="stylesheet" type="text/css" href="/css/format.css"/>
     <link rel="stylesheet" type="text/css" href="/css/edit_format.css"/>
+    <link rel="stylesheet" type="text/css" href="/css/modal.css"/>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="/js/edit_profile.js"></script>
     <title>Edit Profile</title>
@@ -17,7 +18,16 @@
         <div class="fill-up-container">
             <Heading>Edit Profile</Heading>
             
-            <form method="post" action="/profiles/edit-profile" enctype="multipart/form-data">
+            <form id="form-edit" method="post" action="/profiles/edit-profile" enctype="multipart/form-data">
+                <% if (typeof error !== 'undefined' && error === 'password_reuse') { %>
+                    <div id="password-reuse-error" class="error-message" style="color: red; margin-bottom: 10px;">
+                        Old password cannot be used.
+                    </div>
+                <% } else if (typeof error !== 'undefined' && error === 'password_cooldown') { %>
+                    <div id="password-cooldown-error" class="error-message" style="color: red; margin-bottom: 10px;">
+                        You can only change your password once every 24 hours. Please try again after <%= nextChangeTime %>.
+                    </div>
+                <% } %>
                 <div class="field-container">
                     <label for="username_change" class="lbl">Username:</label>
                     <input type="text" id="username_change" name="username_change" class="txt-field" value="<%= user.username %>" required>
@@ -48,6 +58,17 @@
             </form>
         </div>
         
+    </div>
+
+    <div id="reauth-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Confirm Your Identity</h2>
+            <p>Please enter your password to continue.</p>
+            <input type="password" id="reauth-password" placeholder="Password">
+            <button id="reauth-confirm-button">Confirm</button>
+            <div id="reauth-error-msg"></div>
+        </div>
     </div>
     
 </body>

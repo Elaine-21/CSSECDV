@@ -63,8 +63,41 @@ const upload = multer({ storage: storage , fileFilter: fileFilter})
 async function updateUser(req_body, req_files) {
     if (req_body.password_change.length !== 0) {
         validatePassword(req_body.password_change);
-        const hashedPW = await bcrypt.hash(req_body.password_change, 10)
-        await Profile.updateOne({"username": req_body.currentUser}, {$set:{"password": hashedPW}});
+
+        const userProfile = await Profile.findOne({"username": req_body.currentUser});
+        if (!userProfile) {
+            throw new Error("User profile not found.");
+        }
+
+        // --- NEW COOLDOWN CHECK ---
+        const now = Date.now();
+        // Ensure passwordAge exists and is a valid Date object
+        if (userProfile.passwordAge && (now - userProfile.passwordAge.getTime()) < (24 * 60 * 60 * 1000)) {
+            throw new Error("PasswordCooldownError: You can only change your password once every 24 hours.");
+        }
+        // --- END NEW COOLDOWN CHECK ---
+
+        // Password Reuse Check
+        const newHashedPassword = await bcrypt.hash(req_body.password_change, 10);
+        for (const oldHashedPassword of userProfile.passwordHistory) {
+            if (await bcrypt.compare(req_body.password_change, oldHashedPassword)) {
+                throw new Error("PasswordReuseError: Old password cannot be reused.");
+            }
+        }
+
+        // Add current password to history and manage limit
+        if (userProfile.password) { // Only add if a password exists
+            userProfile.passwordHistory.push(userProfile.password);
+        }
+        
+        await Profile.updateOne(
+            {"username": req_body.currentUser},
+            {$set:{
+                "password": newHashedPassword,
+                "passwordHistory": userProfile.passwordHistory,
+                "passwordAge": now // Update passwordAge on successful change
+            }}
+        );
     }
 
     if (req_body.email.length !== 0) {
@@ -148,5 +181,9 @@ async function renderProfile(req, res) {
     }
 }
 
+async function verifyPassword(password, hashedPassword) {
+    return await bcrypt.compare(password, hashedPassword);
+}
+
 module.exports = { renderProfile, getProfile_username, getProfile_id, getProfile_email, updateUser, registerUser, 
-                    upload}
+                    upload, verifyPassword }
