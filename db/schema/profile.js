@@ -11,7 +11,10 @@ const USER_TYPES = {
 const ProfileSchema = new Schema({
     username: {
         type: String,
-        required: true
+        minlength: 3,
+        maxlength: 20,
+        required: true,
+        unique: true
     },
     password: {
         type: String,

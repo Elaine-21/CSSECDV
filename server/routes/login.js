@@ -15,9 +15,17 @@ router.get('/register', auth.checkAlreadyAuthenticated, async (req, res) =>{
 });
 
 router.post('/register', async (req, res) => {
+    const { username, email, password } = req.body;
+    
+    if (!username || !email || !password) {
+        req.flash('error', 'All fields are required.');
+        return res.status(400).render('register', { old: req.body });
+    }
+
     logger.info({ event: 'auth_attempt', status: 'register_submit', username: req.body.username, ip: req.ip, userAgent: req.headers['user-agent'] });
     const result = await api.registerUser(req.body);
     res.redirect('/');
+
 });
 
 router.get('/login', auth.checkAlreadyAuthenticated, async (req, res) =>{
