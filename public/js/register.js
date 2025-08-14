@@ -48,4 +48,12 @@ document.addEventListener("DOMContentLoaded", function(event) {
         }
         
     });
+
+    document.getElementById('account').addEventListener('click', () => {
+        document.getElementById('popupOverlay').style.display = 'flex';
+    });
+
+    document.getElementById('closePopup').addEventListener('click', () => {
+        document.getElementById('popupOverlay').style.display = 'none';
+    });
 });

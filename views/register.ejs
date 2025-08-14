@@ -4,6 +4,77 @@
         <title>Showoof Register</title>
         <link rel="stylesheet" href="/css/showoof.css">
         <script src="/js/register.js"></script>
+
+        <style>
+            #popupOverlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0,0,0,0.5);
+                display: none; /* hidden by default */
+                justify-content: center;
+                align-items: center;
+                z-index: 1000;
+            }
+
+            /* Popup container */
+            #popupBox {
+                background-color: #FAEDCD; /* box color */
+                position: relative;
+                padding: 30px;
+                border-radius: 10px;
+                width: 350px;
+                display: flex;
+                flex-direction: column;
+                gap: 15px; /* space between fields */
+            }
+
+            /* Dropdowns and text inputs */
+            #popupBox select,
+            #popupBox input {
+                padding: 10px;
+                border: 1px solid #ccc;
+                border-radius: 5px;
+                font-size: 14px;
+                background-color: white;
+            }
+
+            /* Submit button */
+            #popupBox button[type="submit"] {
+                padding: 12px;
+                background-color: #D4A373;
+                border: none;
+                border-radius: 5px;
+                color: white;
+                font-size: 16px;
+                font-weight: bold;
+                cursor: pointer;
+            }
+
+            #popupBox button[type="submit"]:hover {
+                background-color: #b97f54;
+            }
+
+            .close-btn {
+                background: none;
+                border: none;
+                font-size: 20px;
+                color: white;
+                background-color: #D4A373;
+                width: 30px; /* fixed width for better alignment */
+                height: 30px;
+                border-radius: 50%; /* make it circular */
+                cursor: pointer;
+                position: absolute;
+                left: 85%;
+            }
+
+            .close-btn:hover {
+                background-color: #b97f54;
+            }
+        </style>
     </head>
     <body>
         <main>
@@ -12,7 +83,7 @@
                 <div id="loginbox">
                     <div id="logintext">Create a new account</div>
                     <div id="longline"></div>
-                    <form action="/register" method="POST">
+                    <form id="registerForm" method="POST">
                         <div class="flex">
                             <div><input type="text" id="username" name="username" placeholder="Username" required></div>
                         </div>
@@ -23,7 +94,36 @@
                                 <p style="color: red; margin-top: 10px;"><%= error %></p>
                             <% } %>
                         </div>
-                        <div id="signup-but"><button type="submit" id="account" value="1">Sign up</button></div>
+                        <div id="signup-but"><button type="button" id="account" value="1">Sign up</button></div>
+
+                        <!-- Hidden popup -->
+                        <div id="popupOverlay">
+                            <div id="popupBox">
+                                <button type="button" id="closePopup" class="close-btn">&times;</button>
+                                
+
+                                <h3>Security Questions</h3>
+
+                                <select name="securityQuestion1" required>
+                                    <option value="">Select first question...</option>
+                                    <option>What is your oldest sibling’s middle name?</option>
+                                    <option>What city were you born in?</option>
+                                    <option>What was your first school?</option>
+                                </select>
+                                <input type="text" name="securityAnswer1" placeholder="Answer" required>
+
+                                <select name="securityQuestion2" required>
+                                    <option value="">Select second question...</option>
+                                    <option>In what city or town did your parents meet?</option>
+                                    <option>What was the name of your first pet?</option>
+                                    <option>What street did you grow up on?</option>
+                                </select>
+                                <input type="text" name="securityAnswer2" placeholder="Answer" required>
+
+                                <!-- Final submit -->
+                                <button type="submit">Finish Registration</button>
+                            </div>
+                        </div>
                     </form>
 
                     <div class="flex">

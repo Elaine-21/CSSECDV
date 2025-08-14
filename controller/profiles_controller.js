@@ -92,12 +92,25 @@ async function updateUser(req_body, req_files) {
 async function registerUser(req_body) {
     validatePassword(req_body.password);
     const hashedPW = await bcrypt.hash(req_body.password, 10)
+    const hashedSQ1 = await bcrypt.hash(req_body.securityAnswer1, 10)
+    const hashedSQ2 = await bcrypt.hash(req_body.securityAnswer2, 10)
     // Let this throw an error on failure (e.g. duplicate key)
     // The route handler will catch it.
     await Profile.create({
         username: req_body.username,
         password: hashedPW,
         email: req_body.email,
+        passwordHistory: [hashedPW],
+        securityQuestions: [
+            {
+                question: req_body.securityQuestion1,
+                answer:  hashedSQ1
+            },
+            {
+                question: req_body.securityQuestion2,
+                answer: hashedSQ2
+            }
+        ]
     });
 }
 
@@ -136,4 +149,4 @@ async function renderProfile(req, res) {
 }
 
 module.exports = { renderProfile, getProfile_username, getProfile_id, getProfile_email, updateUser, registerUser, 
-                    upload }
+                    upload}
