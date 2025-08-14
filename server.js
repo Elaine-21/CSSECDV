@@ -37,6 +37,11 @@ app.use(flash())
 app.set("view engine", "ejs");
 app.use(express.static(__dirname + '/public'));
 
+app.use((req, res, next) => {
+    res.locals.success_msg = req.flash('success_msg');
+    next();
+});
+
 const loginRoutes = require('./server/routes/login');
 app.use('', loginRoutes);
 

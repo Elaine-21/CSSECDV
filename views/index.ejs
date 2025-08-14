@@ -6,7 +6,48 @@
     <script src="/js/index_share_function.js"></script>
     <script src="/js/vote.js"></script>
     <title>ShoWoof</title>
+    <script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const toast = document.getElementById("toast");
+        if (toast) {
+            setTimeout(() => {
+                toast.classList.remove("show"); // fades it out
+                setTimeout(() => toast.remove(), 500); // removes it completely
+            }, 8000); // stays for 3 seconds
+        }
+    });
+    </script>
+
+    <style>
+        .toast {
+            position: fixed;
+            bottom: 20px;         /* Distance from bottom of the screen */
+            right: 20px;          /* Distance from right side */
+            background-color: #333;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 5px;
+            font-size: 14px;
+            opacity: 0;           /* Hidden by default */
+            pointer-events: none; /* Prevent blocking clicks */
+            transition: opacity 0.5s ease-in-out; /* Match fade duration with JS */
+            z-index: 9999;        /* Always on top */
+        }
+
+        /* Show state */
+        .toast.show {
+            opacity: 1;           /* Fade in */
+            pointer-events: auto; /* Allow interactions while showing */
+        }
+    </style>
 </head>
+
+<% if (success_msg && success_msg.length > 0) { %>
+<div id="toast" class="toast show">
+    <%- success_msg %>
+</div>
+
+<% } %>
 
 <body>
     <%- include('partials/sticky_header.ejs'); %>

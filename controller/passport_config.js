@@ -12,7 +12,7 @@ function initialize(passport, getUserByEmail, getUserById) {
         try {
             if (await bcrypt.compare(password, user.password)) {
                 if (user.lockUntil && user.lockUntil > now) {
-                    return done(null, false, { message: 'Account Locked' }); //assume wrong for security only say lockout if valid
+                    return done(null, false, { message: 'Too many invalid attempts. Try Again Later.' }); //only reveal lockout if valid credentials
                 }
                 user.failedLoginAttempts = 0; // reset
                 user.lockUntil = null; //reset
@@ -23,7 +23,7 @@ function initialize(passport, getUserByEmail, getUserById) {
                 return done(null, user);
             } else {
                 if (user.lockUntil && user.lockUntil > now) {
-                    return done(null, false, { message: 'Account Locked. Try again later.' }); //assume wrong for security only say lockout if valid
+                    return done(null, false, { message: 'Invalid email or password' }); //generic message if wrong credentials
                 }
 
                 user.failedLoginAttempts = (user.failedLoginAttempts || 0) + 1;
