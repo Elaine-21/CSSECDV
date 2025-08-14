@@ -123,60 +123,11 @@ router.post('/reset_password/:email', async (req, res) => {
         });
     }
 
-    // If correct, issue token
-    const token = await issuePasswordResetToken(user._id);
-
     // Redirect to password entry page with token in URL
     res.redirect(`/reset_password/${req.params.email}/new-password?token=${token}`);
 });
 
-router.get('/reset_password/:email/new', async (req, res) => {
-    try {
-        //only allow access if a session flag or token is set
-        if (!req.session.allowPasswordReset || req.session.resetEmail !== req.params.email) {
-            req.flash('error', 'You are not authorized to access this page.');
-            return res.redirect('/reset_password');
-        }
 
-        res.render('reset_password_new', { email: req.params.email });
-    } catch (err) {
-        console.error(err);
-        req.flash('error', 'Something went wrong.');
-        res.redirect('/reset_password');
-    }
-});
-
-router.post('/reset_password/:email/new-password', async (req, res) => {
-    const { password, token } = req.body;
-
-    const profile = await Profile.findOne({ email: req.params.email });
-
-    if (!profile) {
-        req.flash('error', 'User not found.');
-        return res.redirect('/reset_password');
-    }
-
-    // Hash token and compare with stored
-    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
-
-    if (
-        profile.passwordResetToken !== hashedToken ||
-        Date.now() > profile.passwordResetExpires
-    ) {
-        req.flash('error', 'Token invalid or expired.');
-        return res.redirect(`/reset_password/${req.params.email}`);
-    }
-
-    // Save new password
-    const hashedPW = await bcrypt.hash(password, 10);
-    profile.password = hashedPW;
-    profile.passwordResetToken = undefined;
-    profile.passwordResetExpires = undefined;
-    await profile.save();
-
-    req.flash('success_msg', 'Password reset successful. Please log in.');
-    res.redirect('/login');
-});
 
 router.delete('/logout', function(req, res, next) {
     req.logout(function(err) {
