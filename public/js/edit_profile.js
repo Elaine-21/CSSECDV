@@ -68,6 +68,13 @@ $(document).ready(function() {
     $("#submit-button").click((e) => {
         e.preventDefault();
 
+        // Check if the password reuse error message is displayed
+        const passwordReuseErrorDiv = document.getElementById("password-reuse-error");
+        if (passwordReuseErrorDiv && passwordReuseErrorDiv.style.display !== "none") {
+            // If the error is displayed, prevent reauthentication modal and form submission
+            return false;
+        }
+
         let new_username = $("input#username_change").val();
         let new_email = $("input#email").val();
         let new_password = $("input#password_change").val();

@@ -63,8 +63,29 @@ const upload = multer({ storage: storage , fileFilter: fileFilter})
 async function updateUser(req_body, req_files) {
     if (req_body.password_change.length !== 0) {
         validatePassword(req_body.password_change);
-        const hashedPW = await bcrypt.hash(req_body.password_change, 10)
-        await Profile.updateOne({"username": req_body.currentUser}, {$set:{"password": hashedPW}});
+
+        const userProfile = await Profile.findOne({"username": req_body.currentUser});
+        if (!userProfile) {
+            throw new Error("User profile not found.");
+        }
+
+        // Password Reuse Check
+        const newHashedPassword = await bcrypt.hash(req_body.password_change, 10);
+        for (const oldHashedPassword of userProfile.passwordHistory) {
+            if (await bcrypt.compare(req_body.password_change, oldHashedPassword)) {
+                throw new Error("PasswordReuseError: Old password cannot be reused.");
+            }
+        }
+
+        // Add current password to history and manage limit
+        if (userProfile.password) { // Only add if a password exists
+            userProfile.passwordHistory.push(userProfile.password);
+        }
+        
+        await Profile.updateOne(
+            {"username": req_body.currentUser},
+            {$set:{"password": newHashedPassword, "passwordHistory": userProfile.passwordHistory}}
+        );
     }
 
     if (req_body.email.length !== 0) {

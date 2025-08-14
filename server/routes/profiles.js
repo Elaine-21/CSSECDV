@@ -45,8 +45,12 @@ router.post('/edit-profile', api.upload.fields([{name: 'profile', maxCount: 1}, 
             res.redirect("/profiles/" + newUsername);
         } catch (err) {
             console.error(err);
-            // For a better user experience, use connect-flash to show the error message on the edit page.
-            res.redirect(`/profiles/${req.body.currentUser}/edit`);
+            if (err.message === "PasswordReuseError: Old password cannot be reused.") {
+                res.render("edit_profile", { user: req.user, error: 'password_reuse' });
+            } else {
+                // For other errors, redirect to edit page without specific error message
+                res.render("edit_profile", { user: req.user, error: null }); // Or handle other errors as needed
+            }
         }
 });
 

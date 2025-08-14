@@ -19,6 +19,11 @@
             <Heading>Edit Profile</Heading>
             
             <form id="form-edit" method="post" action="/profiles/edit-profile" enctype="multipart/form-data">
+                <% if (typeof error !== 'undefined' && error === 'password_reuse') { %>
+                    <div id="password-reuse-error" class="error-message" style="color: red; margin-bottom: 10px;">
+                        Old password cannot be used.
+                    </div>
+                <% } %>
                 <div class="field-container">
                     <label for="username_change" class="lbl">Username:</label>
                     <input type="text" id="username_change" name="username_change" class="txt-field" value="<%= user.username %>" required>
