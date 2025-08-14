@@ -13,6 +13,22 @@ router.get('/:username', async (req, res) => {
     await api.renderProfile(req, res);
 });
 
+router.post('/reauthenticate', async (req, res) => {
+    try {
+        const { password } = req.body;
+        const user = await api.getProfile_id(req.user._id);
+        const isMatch = await api.verifyPassword(password, user.password);
+        if (isMatch) {
+            res.json({ success: true });
+        } else {
+            res.json({ success: false });
+        }
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: 'An error occurred.' });
+    }
+});
+
 router.get('/:username/edit', (req, res) => {
     res.render("edit_profile", { user: req.user })
 });

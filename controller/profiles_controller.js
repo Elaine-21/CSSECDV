@@ -135,5 +135,9 @@ async function renderProfile(req, res) {
     }
 }
 
+async function verifyPassword(password, hashedPassword) {
+    return await bcrypt.compare(password, hashedPassword);
+}
+
 module.exports = { renderProfile, getProfile_username, getProfile_id, getProfile_email, updateUser, registerUser, 
-                    upload }
+                    upload, verifyPassword }
