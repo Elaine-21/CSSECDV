@@ -69,6 +69,14 @@ async function updateUser(req_body, req_files) {
             throw new Error("User profile not found.");
         }
 
+        // --- NEW COOLDOWN CHECK ---
+        const now = Date.now();
+        // Ensure passwordAge exists and is a valid Date object
+        if (userProfile.passwordAge && (now - userProfile.passwordAge.getTime()) < (24 * 60 * 60 * 1000)) {
+            throw new Error("PasswordCooldownError: You can only change your password once every 24 hours.");
+        }
+        // --- END NEW COOLDOWN CHECK ---
+
         // Password Reuse Check
         const newHashedPassword = await bcrypt.hash(req_body.password_change, 10);
         for (const oldHashedPassword of userProfile.passwordHistory) {
@@ -84,7 +92,11 @@ async function updateUser(req_body, req_files) {
         
         await Profile.updateOne(
             {"username": req_body.currentUser},
-            {$set:{"password": newHashedPassword, "passwordHistory": userProfile.passwordHistory}}
+            {$set:{
+                "password": newHashedPassword,
+                "passwordHistory": userProfile.passwordHistory,
+                "passwordAge": now // Update passwordAge on successful change
+            }}
         );
     }
 

@@ -23,6 +23,10 @@
                     <div id="password-reuse-error" class="error-message" style="color: red; margin-bottom: 10px;">
                         Old password cannot be used.
                     </div>
+                <% } else if (typeof error !== 'undefined' && error === 'password_cooldown') { %>
+                    <div id="password-cooldown-error" class="error-message" style="color: red; margin-bottom: 10px;">
+                        You can only change your password once every 24 hours. Please try again after <%= nextChangeTime %>.
+                    </div>
                 <% } %>
                 <div class="field-container">
                     <label for="username_change" class="lbl">Username:</label>

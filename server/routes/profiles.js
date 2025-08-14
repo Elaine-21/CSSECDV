@@ -45,7 +45,18 @@ router.post('/edit-profile', api.upload.fields([{name: 'profile', maxCount: 1}, 
             res.redirect("/profiles/" + newUsername);
         } catch (err) {
             console.error(err);
-            if (err.message === "PasswordReuseError: Old password cannot be reused.") {
+            if (err.message === "PasswordCooldownError: You can only change your password once every 24 hours.") {
+                // Calculate when the user can change it again
+                const userProfile = await api.getProfile_username(req.user.username); // Re-fetch to get passwordAge
+                const nextChangeTimestamp = userProfile.passwordAge.getTime() + (24 * 60 * 60 * 1000);
+                const nextChangeDate = new Date(nextChangeTimestamp);
+
+                res.render("edit_profile", {
+                    user: req.user,
+                    error: 'password_cooldown',
+                    nextChangeTime: nextChangeDate.toLocaleString() // Format for display
+                });
+            } else if (err.message === "PasswordReuseError: Old password cannot be reused.") {
                 res.render("edit_profile", { user: req.user, error: 'password_reuse' });
             } else {
                 // For other errors, redirect to edit page without specific error message
