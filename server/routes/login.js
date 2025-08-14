@@ -14,18 +14,13 @@ logger.info({ evt: 'ROUTE_LOAD', route: 'login.js loaded' });
  * Registration
  * --------------------- */
 router.get('/register', auth.checkAlreadyAuthenticated, async (req, res) => {
-    const { username, email, password } = req.body;
-    
-    if (!username || !email || !password) {
-        req.flash('error', 'All fields are required.');
-        return res.status(400).render('register', { old: req.body });
-    }
     logger.info({
         event: 'auth_attempt',
         status: 'register_page',
         ip: req.ip,
         userAgent: req.headers['user-agent'],
     });
+
     try {
         res.render('register');
     } catch (error) {
@@ -34,21 +29,41 @@ router.get('/register', auth.checkAlreadyAuthenticated, async (req, res) => {
 });
 
 router.post('/register', async (req, res) => {
-  logger.info({
-    event: 'auth_attempt',
-    status: 'register_submit',
-    username: req.body.username,
-    ip: req.ip,
-    userAgent: req.headers['user-agent'],
-  });
-  const result = await api.registerUser(req.body);
-  logger.info({
-    evt: 'AUTH_REGISTER',
-    ok: !!result,
-    username: req.body.username,
-    ip: req.ip,
-  });
-  res.redirect('/');
+    const { username, email, password } = req.body;
+    
+    if (!username || !email || !password) {
+        req.flash('error', 'All fields are required.');
+        return res.status(400).render('register', { old: req.body });
+    }
+
+    logger.info({
+        event: 'auth_attempt',
+        status: 'register_submit',
+        username: req.body.username,
+        ip: req.ip,
+        userAgent: req.headers['user-agent'],
+    });
+    try{
+        const result = await api.registerUser(req.body);
+        if(!result){
+            req.flash('error', 'Username or email already exists.');
+            return res.status(400).render('register', { old: req.body });
+        }
+        req.flash('success', 'Account created. Please log in.');
+
+        logger.info({
+            evt: 'AUTH_REGISTER',
+            ok: !!result,
+            username: req.body.username,
+            ip: req.ip,
+        });
+
+        return res.redirect('/');
+    } catch (error) {
+        req.flash('error', 'Server error. Please try again.');
+        return res.status(500).render('register', { old: req.body });
+    }
+    
 });
 
 /* -----------------------
@@ -70,7 +85,8 @@ router.get('/login', auth.checkAlreadyAuthenticated, async (req, res) => {
 
 // <<< Your requested handler, integrated >>>
 router.post('/login', auth.checkAlreadyAuthenticated, (req, res, next) => {
-  const identifier = req.body?.email || req.body?.username || '';
+    const { email, password, remember } = req.body;
+    const identifier = req.body?.email || req.body?.username || '';
 
   // Emit an explicit "received" line on every POST /login
   logger.info({
@@ -103,6 +119,7 @@ router.post('/login', auth.checkAlreadyAuthenticated, (req, res, next) => {
         emailOrUsername: identifier,
         ip: req.ip,
       });
+      req.flash('error', 'Invalid email or password.');
       return res.status(401).render('login', { message: 'Invalid credentials.' });
     }
 

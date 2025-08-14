@@ -18,7 +18,14 @@
                         </div>
                         <div><input type="text" id="email" name="email" placeholder="Email" required></div>
                         <div><input type="password" id="password" name="password" placeholder="Password" required></div>
-                        <div id="error-msg"></div>
+                        <div id="error-msg">
+                            <% if (messages && messages.error && messages.error.length) { %>
+                            <span style="color:#d00"><%= messages.error[0] %></span>
+                            <% } %>
+                            <% if (messages && messages.success && messages.success.length) { %>
+                            <span style="color:#2a7"><%= messages.success[0] %></span>
+                            <% } %>
+                        </div>
                         <div id="signup-but"><button type="submit" id="account" value="1">Sign up</button></div>
                     </form>
 

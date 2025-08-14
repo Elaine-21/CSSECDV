@@ -18,7 +18,9 @@
                             <input type="checkbox" id="remember" name="remember">
                             <label for="remember">Remember me</label>
                         </div>
-                        <div id="error-msg"><%= messages.error %></div>
+                        <div id="error-msg"><% if (messages && messages.error && messages.error.length) { %>
+                            <%= messages.error[0] %>
+                        <% } %></div>
                         <div><button type="submit" id="loginbutton" value="1">Log In</button></div>
                     </form>
 
