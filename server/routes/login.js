@@ -14,17 +14,23 @@ logger.info({ evt: 'ROUTE_LOAD', route: 'login.js loaded' });
  * Registration
  * --------------------- */
 router.get('/register', auth.checkAlreadyAuthenticated, async (req, res) => {
-  logger.info({
-    event: 'auth_attempt',
-    status: 'register_page',
-    ip: req.ip,
-    userAgent: req.headers['user-agent'],
-  });
-  try {
-    res.render('register');
-  } catch (error) {
-    logger.error({ event: 'error', msg: error.message });
-  }
+    const { username, email, password } = req.body;
+    
+    if (!username || !email || !password) {
+        req.flash('error', 'All fields are required.');
+        return res.status(400).render('register', { old: req.body });
+    }
+    logger.info({
+        event: 'auth_attempt',
+        status: 'register_page',
+        ip: req.ip,
+        userAgent: req.headers['user-agent'],
+    });
+    try {
+        res.render('register');
+    } catch (error) {
+        logger.error({ event: 'error', msg: error.message });
+    }
 });
 
 router.post('/register', async (req, res) => {
