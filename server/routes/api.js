@@ -31,4 +31,22 @@ router.post(
   }
 );
 
+router.post(
+  '/downvote',
+  requireAuth,
+  body('postID').isMongoId().withMessage('Invalid postID'),
+  async (req, res, next) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ ok: false, errors: errors.array() });
+      }
+      const result = await api.downvoteFunction(req, res);
+      return res.status(result.status || (result.ok ? 200 : 400)).json(result);
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
 module.exports = router;

@@ -37,6 +37,9 @@ const { requireAuth, requireRole } = require("./server/middleware/roles");
 const adminRouter = require("./server/routes/admin");
 const apiAuthRouter = require("./server/routes/api_auth");
 
+// 🔒 NEW: site-wide access gate
+const { accessGate } = require("./server/middleware/accessGate");
+
 // --- app-level security middleware (order matters) ---
 app.set("trust proxy", 1); // if behind proxy/load balancer
 
@@ -97,15 +100,19 @@ app.use(passport.session());
 app.use(flash());
 
 app.use((req, res, next) => {
-  res.locals.messages = req.flash();   
+  res.locals.messages = req.flash();
   next();
 });
+
+// 🔒 NEW: single site-wide authorization gate (runs before all routes)
+app.use(accessGate());
 
 // --- views & static ---
 app.set("view engine", "ejs");
 app.use(express.static(__dirname + "/public"));
 
 // --- protected admin routes (admin-only logs etc.) ---
+// (These remain as a second layer; the gate also enforces role for /admin & /api/auth)
 app.use("/admin", requireAuth, requireRole("admin"), adminRouter);
 
 // Admin-only API routes
