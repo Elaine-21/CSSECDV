@@ -53,6 +53,50 @@ router.post(
   api.upload.single('image_url'),
   async (req, res, next) => {
     try {
+
+      const contentType = req.body['content-type'];           
+      const captionRaw  = req.body.caption || '';
+      const textRaw     = req.body.text_content || '';
+      const caption     = captionRaw.trim();
+      const text        = textRaw.trim();
+
+      const errors = [];
+      if (!['image', 'text'].includes(contentType)) {
+        errors.push('Choose a content type (Image or Text).');
+      }
+
+      if (caption.length < 3 || caption.length > 100) {
+        errors.push('Caption must be 3–100 characters.');
+      }
+
+      if (contentType === 'text') {
+        if (text.length === 0) errors.push('Text content is required for text posts.');
+        if (text.length > 3000) errors.push('Text content must be 3,000 characters or fewer.');
+      } else if (contentType === 'image') {
+        if (text.length > 0) errors.push('Do not include text for an image post.');
+      }
+
+      if (errors.length) {
+        logger.warn({
+          event: 'post_validation_failed',
+          path: req.originalUrl,
+          userId: req.user._id,
+          username: req.user.username,
+          reasons: errors,
+          contentType,
+          caption_len: caption.length,
+          text_len: text.length,
+          ip: req.ip,
+          ua: req.headers['user-agent'],
+        });
+        errors.forEach(msg => req.flash('error', msg)); 
+        return res.status(400).render('new_post', {
+          user: req.user.username,
+          status: req.user.status,
+          old: req.body, 
+        });
+      }
+
       // Build image path if a file was uploaded
       let imgPath = null;
       if (req.file && req.file.path) {
@@ -68,6 +112,17 @@ router.post(
       });
 
       await Post.create(newPost);
+
+      logger.info({
+        event: 'post_created',
+        userId: req.user._id,
+        username: req.user.username,
+        contentType,
+        withImage: !!imgPath,
+        caption_len: caption.length,
+        text_len: text.length,
+      });
+
       res.redirect('/');
     } catch (error) {
       logger.error({ event: 'server_error', path: req.originalUrl, message: error.message, stack: error.stack });

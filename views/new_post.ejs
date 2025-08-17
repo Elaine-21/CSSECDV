@@ -18,12 +18,13 @@
             <Heading>Make a New Post</Heading>
 
             <br>
-
-            <form action="newPost" method="POST" enctype="multipart/form-data">
-
+            
+            <form id="newPostForm" action="newPost" method="POST" enctype="multipart/form-data">
+                <div id="error-msg1">
+            </div>
                 <div class="caption-container">
                     <label for="caption">Caption:</label>
-                    <input type="text" id="caption" name="caption" />
+                    <input type="text" id="caption" name="caption" maxlength="100" required/>
                 </div>
             
                 <div class="content-container">
@@ -41,7 +42,8 @@
 
                 <div id="text-container">
                     <label for="text_content">Text Content:</label><br>
-                    <textarea id="text_content" name="text_content" rows="4" cols="50"></textarea>
+                    <textarea id="text_content" name="text_content" rows="4" cols="50" maxlength="3000">
+                    </textarea>
                 </div>
             
                 <br>
@@ -53,5 +55,78 @@
         </div>
         
     </div>
+
+<script>
+    // /public/js/newPostControls.js
+// /public/js/newPostControls.js
+$(function () {
+  const $form   = $('#newPostForm');
+  const $error  = $('#error-msg1');
+  const $caption = $('#caption');
+  const $text    = $('#text_content');
+  const $file    = $('#image_url');
+
+  function showErrors(list) {
+    if (!list.length) return $error.empty();
+    $error.html('<ul>' + list.map(m => `<li>${m}</li>`).join('') + '</ul>');
+  }
+
+  // Toggle which field is required based on the selected content type
+  function setRequiredByType() {
+    const type = $('input[name="content-type"]:checked').val();
+    if (type === 'text') {
+      $text.prop('required', true);
+      $file.prop('required', false);
+    } else if (type === 'image') {
+      $text.prop('required', false);
+      $file.prop('required', false); // keep optional; server will accept empty image_url if needed
+    } else {
+      $text.prop('required', false);
+      $file.prop('required', false);
+    }
+  }
+
+  // Run once on load and whenever the radio changes
+  setRequiredByType();
+  $('input[name="content-type"]').on('change', setRequiredByType);
+
+  // Final guard on submit (prevents posting and shows inline errors)
+  $form.on('submit', function (e) {
+    const errors  = [];
+    const caption = ($caption.val() || '').trim();
+    const type    = $('input[name="content-type"]:checked').val();
+    const text    = ($text.val() || '').trim();
+
+    // Caption length (example rule: >= 3 and <= 100)
+    if (caption.length < 3 || caption.length > 100) {
+      errors.push('Caption must be 3–100 characters.');
+    }
+
+    // Must choose a content type
+    if (!type) {
+      errors.push('Choose a content type (Image or Text).');
+    }
+
+    // If Text is chosen, the textarea must have content
+    if (type === 'text' && text.length === 0) {
+      errors.push('Text content is required for text posts.');
+    }
+
+    if (errors.length) {
+    //   e.preventDefault();
+      showErrors(errors);
+      // focus first offending field
+      if (!type) $('input[name="content-type"]').first().focus();
+      else if (caption.length < 3 || caption.length > 100) $caption.focus();
+      else $text.focus();
+    //   return false;
+    } else {
+      showErrors([]); // clear any older errors
+      setRequiredByType(); // ensure HTML5 required state matches before submit
+    }
+  });
+});
+
+</script>
     
 </body>

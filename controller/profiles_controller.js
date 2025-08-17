@@ -73,10 +73,11 @@ async function updateUser(req_body, req_files) {
 async function registerUser(req_body) {
     let result = true
     const hashedPW = await bcrypt.hash(req_body.password, 10)
+
     const exists = await Profile.exists({ username });
-    if (exists) return false;
-
-
+    const emailTaken = await Profile.exists({ email: req_body.email });
+    if (exists || emailTaken) return false;
+    
     try {
         await Profile.create({
             username: req_body.username,

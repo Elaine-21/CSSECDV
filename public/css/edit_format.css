@@ -28,6 +28,11 @@ body {
 
     font-size: 15px;
 }
+/* Error box style */
+#error-msg1 { color: #d32f2f; margin: .5rem 0 .75rem; }
+#error-msg1 ul { list-style: none; padding-left: 0; margin: 0; }
+#error-msg1 li { margin: 0 0 .25rem; }
+
 
 .field-container *{
     margin-bottom: 5px;
